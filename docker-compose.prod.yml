@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ../stoplist-backend
+      dockerfile: Dockerfile
+    container_name: stoplist_backend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_DATABASE=${DB_DATABASE}
+      - APP_PORT=3836
+      - JWT_SECRET=${JWT_SECRET}
+    ports:
+      - "3836:3836"
+    networks:
+      - stoplist_network
+
+  frontend:
+    build:
+      context: ../stoplist-frontend
+      dockerfile: Dockerfile
+    container_name: stoplist_frontend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      # This needs to be the server's public IP for the frontend to call the API
+      - NEXT_PUBLIC_API_URL=https://${SERVER_IP}/api
+    networks:
+      - stoplist_network
+
+  nginx:
+    image: nginx:1.27.0-alpine
+    container_name: stoplist_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - stoplist_network
+
+networks:
+  stoplist_network:
+    driver: bridge
