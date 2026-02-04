@@ -30,7 +30,7 @@ services:
     environment:
       - NODE_ENV=production
       # This needs to be the server's public IP for the frontend to call the API
-      - NEXT_PUBLIC_API_URL=https://${SERVER_IP}/api
+      - NEXT_PUBLIC_API_URL=https://${SERVER_IP}/v1/api
     networks:
       - stoplist_network
 
